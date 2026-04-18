@@ -1,10 +1,11 @@
-.PHONY: help install test lint smoke up down seed
+.PHONY: help setup install test lint smoke up down seed
 
 # Default target
 help:
 	@echo ""
 	@echo "Sentinel MAS — available commands"
 	@echo ""
+	@echo "  make setup     First-time setup (symlinks playbook → .claude/commands)"
 	@echo "  make install   Install all service dependencies"
 	@echo "  make up        Start local development stack"
 	@echo "  make down      Stop local development stack"
@@ -13,6 +14,9 @@ help:
 	@echo "  make lint      Run linters for all services"
 	@echo "  make smoke     Run smoke tests (set BASE_URL for non-local)"
 	@echo ""
+
+setup:
+	@bash setup.sh
 
 install:
 	cd services/api && pip install -r requirements.txt

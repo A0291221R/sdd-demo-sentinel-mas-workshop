@@ -185,7 +185,7 @@ sentinel-mas/
 ```bash
 git clone https://github.com/<your-org>/sentinel-mas
 cd sentinel-mas
-cp .env.example .env        # fill in API keys
+make setup          # creates .env and symlinks playbook/ → .claude/commands/
 docker compose up
 ```
 

@@ -63,8 +63,10 @@ After your PR merges, run `/changelog`. It will:
 
 The `playbook/` folder contains all workflow commands as plain markdown.
 They work with any AI coding agent — paste the file contents as your
-instruction prompt, or copy them into `.claude/commands/` for Claude Code
-slash command support.
+instruction prompt. For Claude Code, run `make setup` after cloning — this
+symlinks `playbook/` into `.claude/commands/` so slash commands work
+automatically. The `.claude/` folder is gitignored; the symlink is
+recreated locally by each developer.
 
 | Command | When to use |
 |---------|-------------|
