@@ -1,0 +1,90 @@
+services:
+
+  # ── Infrastructure ──────────────────────────────────────────────────────────
+
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: sentinel_mas
+      POSTGRES_USER: sentinel
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-localdev}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U sentinel -d sentinel_mas"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  localstack:
+    image: localstack/localstack:latest
+    ports:
+      - "4566:4566"
+    environment:
+      SERVICES: sqs
+      DEFAULT_REGION: ${AWS_REGION:-ap-southeast-1}
+    volumes:
+      - localstack_data:/var/lib/localstack
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:4566/_localstack/health | grep -q running"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  # ── Application services ────────────────────────────────────────────────────
+
+  api:
+    build:
+      context: services/api
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    env_file: .env
+    environment:
+      DB_HOST: postgres
+      SQS_QUEUE_URL: http://localstack:4566/000000000000/sentinel-mas-tasks
+    volumes:
+      - ./services/api:/app        # hot reload
+    depends_on:
+      postgres:
+        condition: service_healthy
+      localstack:
+        condition: service_healthy
+    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+
+  central:
+    build:
+      context: services/central
+      dockerfile: Dockerfile
+    env_file: .env
+    environment:
+      DB_HOST: postgres
+      SQS_QUEUE_URL: http://localstack:4566/000000000000/sentinel-mas-tasks
+    volumes:
+      - ./services/central:/app    # hot reload
+    depends_on:
+      postgres:
+        condition: service_healthy
+      localstack:
+        condition: service_healthy
+
+  ui:
+    build:
+      context: services/ui
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    env_file: .env
+    environment:
+      VITE_API_URL: http://localhost:8000
+    volumes:
+      - ./services/ui:/app         # hot reload
+      - /app/node_modules
+    depends_on:
+      - api
+
+volumes:
+  postgres_data:
+  localstack_data:
