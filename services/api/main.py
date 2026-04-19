@@ -4,6 +4,7 @@ from typing import Any
 
 import boto3  # type: ignore[import-untyped]
 from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 
 from .models import QueryRequest, TaskResponse
 from .settings import settings
@@ -12,6 +13,13 @@ from .task_store import get_task, save_task
 __all__ = ["app"]
 
 app = FastAPI(title="Sentinel MAS API")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173"],
+    allow_methods=["GET", "POST"],
+    allow_headers=["Content-Type"],
+)
 
 _sqs_client: Any = None
 
@@ -36,10 +44,13 @@ def health() -> dict[str, str]:
 @app.post("/query", status_code=202, response_model=TaskResponse)
 def post_query(request: QueryRequest) -> TaskResponse:
     task_id = str(uuid.uuid4())
-    _get_sqs_client().send_message(
-        QueueUrl=settings.queue_url,
-        MessageBody=json.dumps({"task_id": task_id, "query": request.query}),
-    )
+    try:
+        _get_sqs_client().send_message(
+            QueueUrl=settings.queue_url,
+            MessageBody=json.dumps({"task_id": task_id, "query": request.query}),
+        )
+    except Exception as exc:
+        raise HTTPException(status_code=503, detail=f"Queue unavailable: {exc}") from exc
     task = TaskResponse(
         task_id=task_id,
         status="pending",
