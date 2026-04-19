@@ -5,6 +5,11 @@ Entries are created automatically by `/feature-spec` and closed by `/changelog`.
 
 ## Unreleased
 
+### phase-8-sqs-consumer — 2026-04-19
+- Branch: `phase-8-sqs-consumer`
+- Spec: `specs/2026-04-19-sqs-consumer/`
+- Status: in progress
+
 ## 2026-04-19
 
 ### phase-7-fastapi-service

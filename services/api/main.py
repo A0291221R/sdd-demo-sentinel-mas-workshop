@@ -1,16 +1,31 @@
+import json
 import uuid
+from typing import Any
 
+import boto3  # type: ignore[import-untyped]
 from fastapi import FastAPI, HTTPException
 
-from services.central.crew import SENTINEL_GRAPH
-from services.central.state import make_state
-
 from .models import QueryRequest, TaskResponse
-from .task_store import get_task, save_task, serialize_agent_result
+from .settings import settings
+from .task_store import get_task, save_task
 
 __all__ = ["app"]
 
 app = FastAPI(title="Sentinel MAS API")
+
+_sqs_client: Any = None
+
+
+def _get_sqs_client() -> Any:
+    global _sqs_client
+    if _sqs_client is None:
+        _sqs_client = boto3.client("sqs")
+    return _sqs_client
+
+
+def set_sqs_client(client: Any) -> None:
+    global _sqs_client
+    _sqs_client = client
 
 
 @app.get("/health")
@@ -21,15 +36,16 @@ def health() -> dict[str, str]:
 @app.post("/query", status_code=202, response_model=TaskResponse)
 def post_query(request: QueryRequest) -> TaskResponse:
     task_id = str(uuid.uuid4())
-    state = make_state(request.query)
-    result_state = SENTINEL_GRAPH.invoke(state)
-
+    _get_sqs_client().send_message(
+        QueueUrl=settings.queue_url,
+        MessageBody=json.dumps({"task_id": task_id, "query": request.query}),
+    )
     task = TaskResponse(
         task_id=task_id,
-        status="completed",
-        intent=result_state.get("intent"),
-        agent_result=serialize_agent_result(result_state.get("agent_result")),
-        error=result_state.get("error"),
+        status="pending",
+        intent=None,
+        agent_result=None,
+        error=None,
     )
     save_task(task_id, task)
     return task

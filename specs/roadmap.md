@@ -70,8 +70,10 @@ first; infrastructure and UI follow once the intelligence layer is proven.
 - [ ] Implement SQS long-poll consumer that dequeues messages and invokes
       the LangGraph graph
 - [ ] Write audit log record to RDS on every graph completion
+      _(in-memory TASK_STORE; RDS in Phase 10)_
 - [ ] Handle at-least-once delivery (idempotency key on task ID)
 - [ ] Test consumer against LocalStack or real SQS in dev
+      _(mocked; LocalStack in Phase 10)_
 
 ## Phase 9 — React operator dashboard
 
