@@ -5,10 +5,13 @@ Entries are created automatically by `/feature-spec` and closed by `/changelog`.
 
 ## Unreleased
 
-### phase-4-router-node — 2026-04-19
+## 2026-04-19
+
+### phase-4-router-node
 - Branch: `phase-4-router-node`
 - Spec: `specs/2026-04-19-router-node/`
-- Status: in progress
+- Status: merged
+- Summary: Implements router_node that classifies natural language queries into TRACKING, EVENTS, or SOP intents using case-insensitive keyword matching, sets error on unrecognised input, and centralises the Intent type in GraphState.
 
 ## 2026-04-19
 
