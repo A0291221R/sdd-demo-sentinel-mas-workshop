@@ -5,6 +5,11 @@ Entries are created automatically by `/feature-spec` and closed by `/changelog`.
 
 ## Unreleased
 
+### phase-9-react-operator-dashboard — 2026-04-19
+- Branch: `phase-9-react-operator-dashboard`
+- Spec: `specs/2026-04-19-react-operator-dashboard/`
+- Status: in progress
+
 ## 2026-04-19
 
 ### phase-8-sqs-consumer
