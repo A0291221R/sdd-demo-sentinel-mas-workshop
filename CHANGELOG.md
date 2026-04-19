@@ -5,6 +5,11 @@ Entries are created automatically by `/feature-spec` and closed by `/changelog`.
 
 ## Unreleased
 
+### phase-5-specialist-agent-subgraphs — 2026-04-19
+- Branch: `phase-5-specialist-agent-subgraphs`
+- Spec: `specs/2026-04-19-specialist-agent-subgraphs/`
+- Status: in progress
+
 ## 2026-04-19
 
 ### phase-4-router-node

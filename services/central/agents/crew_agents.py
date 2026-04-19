@@ -43,3 +43,11 @@ AGENT_REGISTRY: MappingProxyType[str, AgentRuntime] = MappingProxyType({
         tools={"search_sop": _search_sop},
     ),
 })
+
+# Single source of truth for which tools each agent is authorised to call.
+# Import this in subgraph_nodes.py and tests — never duplicate.
+DEFAULT_POLICY_MAP: dict[str, set[str]] = {
+    "tracking": {"get_position"},
+    "events": {"query_events"},
+    "faq": {"search_sop"},
+}

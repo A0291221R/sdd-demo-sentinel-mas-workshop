@@ -1,18 +1,12 @@
 import pytest
-from services.central.agents import AGENT_REGISTRY, AgentExecutor
+from services.central.agents import AGENT_REGISTRY, DEFAULT_POLICY_MAP, AgentExecutor
 from services.central.policy import SentinelPolicy
 from services.central.state import make_state
-
-POLICY_MAP = {
-    "tracking": {"get_position"},
-    "events": {"query_events"},
-    "faq": {"search_sop"},
-}
 
 
 @pytest.fixture
 def executor() -> AgentExecutor:
-    policy = SentinelPolicy(policy_map=POLICY_MAP)
+    policy = SentinelPolicy(policy_map=DEFAULT_POLICY_MAP)
     return AgentExecutor(registry=AGENT_REGISTRY, policy=policy)
 
 
