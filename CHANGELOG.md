@@ -5,6 +5,11 @@ Entries are created automatically by `/feature-spec` and closed by `/changelog`.
 
 ## Unreleased
 
+### phase-2-sentinel-policy-layer — 2026-04-19
+- Branch: `phase-2-sentinel-policy-layer`
+- Spec: `specs/2026-04-19-sentinel-policy-layer/`
+- Status: in progress
+
 ### phase-1-shared-state-schema — 2026-04-19
 - Branch: `phase-1-shared-state-schema`
 - Spec: `specs/2026-04-19-shared-state-schema/`
