@@ -5,10 +5,13 @@ Entries are created automatically by `/feature-spec` and closed by `/changelog`.
 
 ## Unreleased
 
-### phase-6-langgraph-graph-compilation — 2026-04-19
+## 2026-04-19
+
+### phase-6-langgraph-graph-compilation
 - Branch: `phase-6-langgraph-graph-compilation`
 - Spec: `specs/2026-04-19-langgraph-graph-compilation/`
-- Status: in progress
+- Status: merged
+- Summary: Compiles the full LangGraph StateGraph in crew.py (START → router → conditional edges → tracking/events/faq → END); exposes SENTINEL_GRAPH module-level singleton and build_graph() factory; fulfils Phase 4 deferred conditional-edge wiring. 50 tests, mypy strict clean.
 
 ## 2026-04-19
 
