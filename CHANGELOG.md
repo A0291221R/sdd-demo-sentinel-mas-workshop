@@ -5,10 +5,13 @@ Entries are created automatically by `/feature-spec` and closed by `/changelog`.
 
 ## Unreleased
 
-### phase-3-agent-registry — 2026-04-19
+## 2026-04-19
+
+### phase-3-agent-registry
 - Branch: `phase-3-agent-registry`
 - Spec: `specs/2026-04-19-agent-registry/`
-- Status: in progress
+- Status: merged
+- Summary: Implements AgentRuntime dataclass, AGENT_REGISTRY with three stub specialist agents, and AgentExecutor that looks up agents, enforces Sentinel policy, and appends outcomes to GraphState.audit_log — wiring Phase 1 state and Phase 2 policy into executable agent behaviour.
 
 ### phase-2-sentinel-policy-layer — 2026-04-19
 - Branch: `phase-2-sentinel-policy-layer`
