@@ -1,10 +1,12 @@
 import operator
 from typing import Annotated, Literal, NotRequired, TypedDict
 
+Intent = Literal["TRACKING", "EVENTS", "SOP"]
+
 
 class GraphState(TypedDict, total=True):
     query: str
-    intent: NotRequired[Literal["TRACKING", "EVENTS", "SOP"] | None]
+    intent: NotRequired[Intent | None]
     agent_result: NotRequired[object | None]
     audit_log: NotRequired[Annotated[list[dict[str, object]], operator.add]]
     error: NotRequired[str | None]
