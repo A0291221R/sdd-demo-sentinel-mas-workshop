@@ -36,17 +36,17 @@ first; infrastructure and UI follow once the intelligence layer is proven.
 
 - [x] Implement the router LangGraph node that classifies intent
       (TRACKING / EVENTS / SOP) from the incoming query
-- [ ] Wire router output to conditional edges dispatching to agent subgraphs
-      _(deferred to Phase 6 — requires compiled graph)_
+- [x] Wire router output to conditional edges dispatching to agent subgraphs
+      _(completed in Phase 6)_
 - [x] Write unit tests for each intent classification path
 
 ## Phase 5 — Specialist agent subgraphs
 
-- [ ] Implement Tracking Agent subgraph with stub `get_position` tool
-- [ ] Implement Event Agent subgraph with stub `query_events` tool
-- [ ] Implement FAQ/SOP Agent subgraph with stub `search_sop` tool
-- [ ] Verify policy layer correctly blocks cross-agent tool access
-- [ ] Integration test: end-to-end query → router → agent → result
+- [x] Implement Tracking Agent subgraph with stub `get_position` tool
+- [x] Implement Event Agent subgraph with stub `query_events` tool
+- [x] Implement FAQ/SOP Agent subgraph with stub `search_sop` tool
+- [x] Verify policy layer correctly blocks cross-agent tool access
+- [x] Integration test: end-to-end query → router → agent → result
 
 ## Phase 6 — LangGraph graph compilation
 

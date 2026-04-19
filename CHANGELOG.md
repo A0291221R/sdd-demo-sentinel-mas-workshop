@@ -5,6 +5,11 @@ Entries are created automatically by `/feature-spec` and closed by `/changelog`.
 
 ## Unreleased
 
+### phase-6-langgraph-graph-compilation — 2026-04-19
+- Branch: `phase-6-langgraph-graph-compilation`
+- Spec: `specs/2026-04-19-langgraph-graph-compilation/`
+- Status: in progress
+
 ## 2026-04-19
 
 ### phase-5-specialist-agent-subgraphs
