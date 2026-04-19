@@ -16,11 +16,11 @@ first; infrastructure and UI follow once the intelligence layer is proven.
 
 ## Phase 2 — Sentinel policy layer
 
-- [ ] Implement `sentinel_policy.py` with agent-to-tool permission map
-- [ ] Add authentication check (agent identity from call context)
-- [ ] Add rate limiting (per-agent, per-tool, configurable window)
-- [ ] Return structured `PolicyRejection` on any violation
-- [ ] Write unit tests for permit, reject, and rate-limit paths
+- [x] Implement `sentinel_policy.py` with agent-to-tool permission map
+- [x] Add authentication check (agent identity from call context)
+- [x] Add rate limiting (per-agent, per-tool, configurable window)
+- [x] Return structured `PolicyRejection` on any violation
+- [x] Write unit tests for permit, reject, and rate-limit paths
 
 ## Phase 3 — Agent registry and base runtime
 
