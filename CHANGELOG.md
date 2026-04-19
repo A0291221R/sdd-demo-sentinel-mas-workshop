@@ -5,10 +5,13 @@ Entries are created automatically by `/feature-spec` and closed by `/changelog`.
 
 ## Unreleased
 
-### phase-5-specialist-agent-subgraphs — 2026-04-19
+## 2026-04-19
+
+### phase-5-specialist-agent-subgraphs
 - Branch: `phase-5-specialist-agent-subgraphs`
 - Spec: `specs/2026-04-19-specialist-agent-subgraphs/`
-- Status: in progress
+- Status: merged
+- Summary: Implements AgentNode frozen dataclass and three module-level specialist nodes (tracking, events, faq) that delegate to AgentExecutor for policy enforcement and audit logging; NODE_MAP wires Intent to callable node for Phase 6 graph compilation.
 
 ## 2026-04-19
 
