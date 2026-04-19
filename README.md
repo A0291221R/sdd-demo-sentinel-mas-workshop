@@ -45,7 +45,8 @@ and progress — rather than producing generic output.
 | `/feature-spec mvp` | MVP planning | Synthesises a spec across all roadmap phases |
 | `/next-phase` | Quick feature start | Lightweight version of `/feature-spec` — no interview |
 | `/review-branch` | Before merging | Multi-perspective code review against specs |
-| `/changelog` | After merge | Closes the CHANGELOG entry for the merged feature |
+| `/ship` | Ready to land | Commit + merge + verify + delete branch + close changelog |
+| `/changelog` | Manual merge only | Closes the CHANGELOG entry when you merged manually |
 
 ### The workflow
 
@@ -66,7 +67,7 @@ and progress — rather than producing generic output.
 /review-branch                 ← review before merging
       │
       ▼
-/changelog                     ← close the entry after merge
+/ship                          ← commit + merge + verify + delete + changelog
 ```
 
 ### Why it works

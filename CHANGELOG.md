@@ -5,6 +5,11 @@ Entries are created automatically by `/feature-spec` and closed by `/changelog`.
 
 ## Unreleased
 
+### phase-3-agent-registry — 2026-04-19
+- Branch: `phase-3-agent-registry`
+- Spec: `specs/2026-04-19-agent-registry/`
+- Status: in progress
+
 ### phase-2-sentinel-policy-layer — 2026-04-19
 - Branch: `phase-2-sentinel-policy-layer`
 - Spec: `specs/2026-04-19-sentinel-policy-layer/`

@@ -80,13 +80,32 @@ Produces a prioritised action item list.
 
 ---
 
+### `/ship` — commit, merge, clean up, close changelog
+
+**File:** `ship.md`
+**Use when:** The feature is done and ready to land.
+
+Runs the full close-out sequence in one command:
+1. Stages and commits all changes (confirms message with you first)
+2. Merges into the base branch with `--no-ff`
+3. Verifies the merge succeeded
+4. Deletes the branch **only if verification passed** — hard gate, never skipped
+5. Updates and commits `CHANGELOG.md`
+
+Use `/ship` instead of running `/changelog` separately — it does everything.
+
+---
+
 ### `/changelog` — close a feature after merge
 
 **File:** `changelog.md`
-**Use when:** After a feature branch has been merged.
+**Use when:** The branch was merged manually and you only need to close the changelog entry.
 
 Finds the matching in-progress entry in `CHANGELOG.md`, marks it merged,
 adds a summary drawn from the spec, and commits the update.
+
+Use this when you've already merged and deleted the branch yourself.
+For the full automated flow, use `/ship` instead.
 
 ---
 
@@ -106,5 +125,5 @@ adds a summary drawn from the spec, and commits the update.
 /review-branch         ← before every PR
       │
       ▼
-/changelog             ← after every merge
+/ship                  ← commit + merge + delete + changelog in one step
 ```
