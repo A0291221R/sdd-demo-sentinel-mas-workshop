@@ -34,10 +34,11 @@ first; infrastructure and UI follow once the intelligence layer is proven.
 
 ## Phase 4 — Router node
 
-- [ ] Implement the router LangGraph node that classifies intent
+- [x] Implement the router LangGraph node that classifies intent
       (TRACKING / EVENTS / SOP) from the incoming query
 - [ ] Wire router output to conditional edges dispatching to agent subgraphs
-- [ ] Write unit tests for each intent classification path
+      _(deferred to Phase 6 — requires compiled graph)_
+- [x] Write unit tests for each intent classification path
 
 ## Phase 5 — Specialist agent subgraphs
 
