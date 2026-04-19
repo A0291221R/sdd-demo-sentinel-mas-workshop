@@ -50,9 +50,11 @@ first; infrastructure and UI follow once the intelligence layer is proven.
 
 ## Phase 6 — LangGraph graph compilation
 
-- [ ] Compile the full graph in `crew.py` (START → router → agents → END)
+- [x] Compile the full graph in `crew.py` (START → router → agents → END)
 - [ ] Add shared state checkpointing to RDS (agent state JSONB columns)
+      _(deferred to Phase 10)_
 - [ ] Smoke test the compiled graph locally with `docker compose up`
+      _(deferred to Phase 10)_
 
 ## Phase 7 — FastAPI service
 
@@ -67,21 +69,22 @@ first; infrastructure and UI follow once the intelligence layer is proven.
 
 ## Phase 8 — SQS consumer in `central`
 
-- [ ] Implement SQS long-poll consumer that dequeues messages and invokes
+- [x] Implement SQS long-poll consumer that dequeues messages and invokes
       the LangGraph graph
 - [ ] Write audit log record to RDS on every graph completion
       _(in-memory TASK_STORE; RDS in Phase 10)_
-- [ ] Handle at-least-once delivery (idempotency key on task ID)
+- [x] Handle at-least-once delivery (idempotency key on task ID)
 - [ ] Test consumer against LocalStack or real SQS in dev
       _(mocked; LocalStack in Phase 10)_
 
 ## Phase 9 — React operator dashboard
 
-- [ ] Scaffold React 18 app with TypeScript
-- [ ] Implement query input and result display components
-- [ ] Implement audit log view (paginated table of past queries and outcomes)
-- [ ] Wire to API service via fetch; handle loading and error states
+- [x] Scaffold React 18 app with TypeScript
+- [x] Implement query input and result display components
+- [x] Implement audit log view (paginated table of past queries and outcomes)
+- [x] Wire to API service via fetch; handle loading and error states
 - [ ] Smoke test against local API service
+      _(deferred to Phase 10; requires LocalStack)_
 
 ## Phase 10 — Terraform infrastructure (dev environment)
 

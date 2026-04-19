@@ -5,6 +5,14 @@ Entries are created automatically by `/feature-spec` and closed by `/changelog`.
 
 ## Unreleased
 
+## 2026-04-20
+
+### phase-10-terraform-infrastructure
+- Branch: `phase-10-terraform-infrastructure`
+- Spec: `specs/2026-04-19-terraform-infrastructure/`
+- Status: merged
+- Summary: Seven Terraform modules (networking, IAM, RDS, SQS, ECS, ALB, CodeDeploy) for the Sentinel MAS dev environment on AWS Fargate; DATABASE_URL stored in Secrets Manager, central worker uses ECS rolling deployment, ACM cert references directly to allow apply to complete before manual DNS validation.
+
 ## 2026-04-19
 
 ### phase-9-react-operator-dashboard
