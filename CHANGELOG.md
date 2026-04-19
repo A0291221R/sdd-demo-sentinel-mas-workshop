@@ -5,6 +5,11 @@ Entries are created automatically by `/feature-spec` and closed by `/changelog`.
 
 ## Unreleased
 
+### phase-4-router-node — 2026-04-19
+- Branch: `phase-4-router-node`
+- Spec: `specs/2026-04-19-router-node/`
+- Status: in progress
+
 ## 2026-04-19
 
 ### phase-3-agent-registry
