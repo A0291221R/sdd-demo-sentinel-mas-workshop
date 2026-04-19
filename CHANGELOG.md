@@ -5,10 +5,13 @@ Entries are created automatically by `/feature-spec` and closed by `/changelog`.
 
 ## Unreleased
 
-### phase-9-react-operator-dashboard — 2026-04-19
+## 2026-04-19
+
+### phase-9-react-operator-dashboard
 - Branch: `phase-9-react-operator-dashboard`
 - Spec: `specs/2026-04-19-react-operator-dashboard/`
-- Status: in progress
+- Status: merged
+- Summary: Single-page React 18 + TypeScript operator dashboard with query input, polling result panel, session audit log with 10-row pagination, CORS middleware on FastAPI, and a useTaskPoller hook with generation-counter race-condition guard.
 
 ## 2026-04-19
 
