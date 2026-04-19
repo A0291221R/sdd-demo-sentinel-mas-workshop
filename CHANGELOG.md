@@ -5,10 +5,13 @@ Entries are created automatically by `/feature-spec` and closed by `/changelog`.
 
 ## Unreleased
 
-### phase-7-fastapi-service — 2026-04-19
+## 2026-04-19
+
+### phase-7-fastapi-service
 - Branch: `phase-7-fastapi-service`
 - Spec: `specs/2026-04-19-fastapi-service/`
-- Status: in progress
+- Status: merged
+- Summary: Implements services/api/ with POST /query (202, synchronous SENTINEL_GRAPH invocation), GET /result/{task_id} (200/404), and GET /health; in-memory task store with serialized agent_result; 10 TestClient tests; SQS and RDS wiring deferred to Phase 8.
 
 ## 2026-04-19
 
