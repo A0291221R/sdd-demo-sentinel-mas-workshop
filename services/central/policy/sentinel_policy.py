@@ -1,3 +1,4 @@
+import os
 from collections import defaultdict, deque
 from dataclasses import dataclass
 from datetime import datetime, timezone
@@ -16,6 +17,21 @@ class PolicyRejection:
     tool: str
     reason: str
     timestamp: datetime
+
+
+def _emit_rejection_metric() -> None:
+    """Emit PolicyRejections metric to CloudWatch. No-op when AWS is not configured."""
+    if not os.environ.get("AWS_DEFAULT_REGION"):
+        return
+    try:
+        import boto3  # type: ignore[import-untyped]
+
+        boto3.client("cloudwatch").put_metric_data(
+            Namespace="sentinel",
+            MetricData=[{"MetricName": "PolicyRejections", "Value": 1, "Unit": "Count"}],
+        )
+    except Exception:  # noqa: BLE001 — fire-and-forget telemetry; never block a rejection
+        pass
 
 
 class SentinelPolicy:
@@ -38,9 +54,11 @@ class SentinelPolicy:
         now = datetime.now(timezone.utc)
 
         if agent not in self._policy_map:
+            _emit_rejection_metric()
             return PolicyRejection(agent=agent, tool=tool, reason="unknown agent", timestamp=now)
 
         if tool not in self._policy_map[agent]:
+            _emit_rejection_metric()
             return PolicyRejection(agent=agent, tool=tool, reason="not authorised", timestamp=now)
 
         limit = self._rate_limits.get(agent, {}).get(tool)
@@ -51,6 +69,7 @@ class SentinelPolicy:
                 while log and log[0].timestamp() < cutoff:
                     log.popleft()
                 if len(log) >= limit.max_calls:
+                    _emit_rejection_metric()
                     return PolicyRejection(
                         agent=agent, tool=tool, reason="rate limit exceeded", timestamp=now
                     )

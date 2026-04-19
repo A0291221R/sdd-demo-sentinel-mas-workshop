@@ -1,0 +1,47 @@
+name: Deploy
+
+on:
+  workflow_run:
+    workflows: [Build & Push]
+    branches: [main]
+    types: [completed]
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  deploy:
+    name: Trigger CodeDeploy (api) and ECS rolling (central)
+    runs-on: ubuntu-latest
+    if: >-
+      github.event.workflow_run.conclusion == 'success' &&
+      github.repository == 'A0291221R/sdd-demo-sentinel-mas-workshop'
+
+    steps:
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ap-southeast-1
+
+      - name: CodeDeploy — api (blue/green)
+        env:
+          CODEDEPLOY_APP: ${{ vars.CODEDEPLOY_APP_NAME || 'sentinel-dev-api' }}
+          CODEDEPLOY_DG: ${{ vars.CODEDEPLOY_DG_NAME || 'sentinel-dev-api-dg' }}
+        run: |
+          aws deploy create-deployment \
+            --application-name "$CODEDEPLOY_APP" \
+            --deployment-group-name "$CODEDEPLOY_DG" \
+            --deployment-config-name CodeDeployDefault.ECSCanary10Percent5Minutes \
+            --description "Deploy ${{ github.event.workflow_run.head_sha }}"
+
+      - name: ECS rolling update — central
+        env:
+          ECS_CLUSTER: ${{ vars.ECS_CLUSTER_NAME || 'sentinel-dev' }}
+          ECS_SERVICE: ${{ vars.ECS_CENTRAL_SERVICE_NAME || 'sentinel-dev-central' }}
+        run: |
+          aws ecs update-service \
+            --cluster "$ECS_CLUSTER" \
+            --service "$ECS_SERVICE" \
+            --force-new-deployment

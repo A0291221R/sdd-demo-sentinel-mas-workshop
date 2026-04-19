@@ -1,0 +1,4 @@
+boto3
+langgraph
+pydantic
+pytest

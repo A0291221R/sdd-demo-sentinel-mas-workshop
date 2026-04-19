@@ -6,6 +6,14 @@ output "alb_arn" {
   value = aws_lb.this.arn
 }
 
+output "alb_arn_suffix" {
+  value = aws_lb.this.arn_suffix
+}
+
+output "api_tg_arn_suffix_blue" {
+  value = aws_lb_target_group.api_blue.arn_suffix
+}
+
 output "https_listener_arn" {
   value = aws_lb_listener.https.arn
 }

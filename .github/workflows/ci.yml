@@ -1,0 +1,57 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  api:
+    name: API — lint / typecheck / test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: services/api/requirements.txt
+      - run: pip install ruff mypy -r services/api/requirements.txt
+      - run: ruff check services/api/
+      - run: mypy --strict --config-file services/api/pyproject.toml services/api/
+      - run: pytest services/api/tests/
+        env:
+          PYTHONPATH: .
+
+  central:
+    name: Central — lint / typecheck / test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: services/central/requirements.txt
+      - run: pip install ruff mypy -r services/central/requirements.txt
+      - run: ruff check services/central/
+      - run: mypy --strict --config-file services/central/pyproject.toml services/central/
+      - run: pytest services/central/tests/
+        env:
+          PYTHONPATH: .
+
+  ui:
+    name: UI — lint / typecheck
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: services/ui/package-lock.json
+      - run: npm ci
+        working-directory: services/ui
+      - run: npm run lint
+        working-directory: services/ui
+      - run: npx tsc --noEmit
+        working-directory: services/ui
