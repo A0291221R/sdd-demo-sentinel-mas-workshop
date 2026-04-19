@@ -5,10 +5,13 @@ Entries are created automatically by `/feature-spec` and closed by `/changelog`.
 
 ## Unreleased
 
-### phase-11-cicd-pipeline — 2026-04-20
+## 2026-04-20
+
+### phase-11-cicd-pipeline
 - Branch: `phase-11-cicd-pipeline`
 - Spec: `specs/2026-04-20-cicd-pipeline/`
-- Status: in progress
+- Status: merged
+- Summary: Three GitHub Actions workflows (ci, build-push, deploy) with OIDC auth and fork protection; Dockerfiles for all three services; CloudWatch alarm Terraform module with CodeDeploy auto-rollback wiring; PolicyRejections custom metric emitted from sentinel_policy.py.
 
 ## 2026-04-20
 
