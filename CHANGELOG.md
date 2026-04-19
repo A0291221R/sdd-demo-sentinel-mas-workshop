@@ -5,10 +5,13 @@ Entries are created automatically by `/feature-spec` and closed by `/changelog`.
 
 ## Unreleased
 
-### phase-8-sqs-consumer — 2026-04-19
+## 2026-04-19
+
+### phase-8-sqs-consumer
 - Branch: `phase-8-sqs-consumer`
 - Spec: `specs/2026-04-19-sqs-consumer/`
-- Status: in progress
+- Status: merged
+- Summary: Implements SQS long-poll consumer (consume_one + run_consumer) in services/central, wires POST /query to enqueue via SQS, adds pydantic-settings queue_url config, idempotency guard, and 9 consumer tests; RDS persistence and LocalStack testing deferred to Phase 10.
 
 ## 2026-04-19
 
