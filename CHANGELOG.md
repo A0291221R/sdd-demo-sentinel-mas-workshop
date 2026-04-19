@@ -5,6 +5,11 @@ Entries are created automatically by `/feature-spec` and closed by `/changelog`.
 
 ## Unreleased
 
+### phase-7-fastapi-service — 2026-04-19
+- Branch: `phase-7-fastapi-service`
+- Spec: `specs/2026-04-19-fastapi-service/`
+- Status: in progress
+
 ## 2026-04-19
 
 ### phase-6-langgraph-graph-compilation

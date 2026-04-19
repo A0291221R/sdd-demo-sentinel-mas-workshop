@@ -56,12 +56,14 @@ first; infrastructure and UI follow once the intelligence layer is proven.
 
 ## Phase 7 — FastAPI service
 
-- [ ] Implement `POST /query` endpoint that enqueues to SQS and returns a
-      task ID
-- [ ] Implement `GET /result/{task_id}` endpoint that reads from RDS audit log
-- [ ] Implement `GET /health` endpoint
-- [ ] Auto-generate OpenAPI docs (FastAPI default)
-- [ ] Write integration tests for all endpoints against a local Postgres
+- [x] Implement `POST /query` endpoint that enqueues to SQS and returns a
+      task ID _(stubbed: invokes SENTINEL_GRAPH directly; SQS wired in Phase 8)_
+- [x] Implement `GET /result/{task_id}` endpoint that reads from RDS audit log
+      _(stubbed: in-memory dict store; RDS persistence in Phase 8)_
+- [x] Implement `GET /health` endpoint
+- [x] Auto-generate OpenAPI docs (FastAPI default)
+- [x] Write integration tests for all endpoints against a local Postgres
+      _(stubbed: TestClient tests; no Postgres required until Phase 8)_
 
 ## Phase 8 — SQS consumer in `central`
 
