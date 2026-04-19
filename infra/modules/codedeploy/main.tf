@@ -16,7 +16,12 @@ resource "aws_codedeploy_deployment_group" "api" {
 
   auto_rollback_configuration {
     enabled = true
-    events  = ["DEPLOYMENT_FAILURE"]
+    events  = ["DEPLOYMENT_FAILURE", "DEPLOYMENT_STOP_ON_ALARM"]
+  }
+
+  alarm_configuration {
+    alarms  = [var.api_5xx_alarm_arn]
+    enabled = true
   }
 
   blue_green_deployment_config {

@@ -12,6 +12,7 @@ module "iam" {
   source        = "./modules/iam"
   environment   = var.environment
   sqs_queue_arn = module.sqs.queue_arn
+  github_repo   = var.github_repo
 }
 
 module "rds" {
@@ -47,6 +48,14 @@ module "alb" {
   domain_name       = var.domain_name
 }
 
+module "cloudwatch" {
+  source      = "./modules/cloudwatch"
+  environment = var.environment
+
+  alb_arn_suffix    = module.alb.alb_arn_suffix
+  api_tg_arn_suffix = module.alb.api_tg_arn_suffix_blue
+}
+
 module "codedeploy" {
   source      = "./modules/codedeploy"
   environment = var.environment
@@ -57,4 +66,5 @@ module "codedeploy" {
   alb_listener_arn     = module.alb.https_listener_arn
   api_tg_name_blue     = module.alb.api_tg_name_blue
   api_tg_name_green    = module.alb.api_tg_name_green
+  api_5xx_alarm_arn    = module.cloudwatch.api_5xx_alarm_arn
 }

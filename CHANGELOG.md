@@ -5,6 +5,11 @@ Entries are created automatically by `/feature-spec` and closed by `/changelog`.
 
 ## Unreleased
 
+### phase-11-cicd-pipeline — 2026-04-20
+- Branch: `phase-11-cicd-pipeline`
+- Spec: `specs/2026-04-20-cicd-pipeline/`
+- Status: in progress
+
 ## 2026-04-20
 
 ### phase-10-terraform-infrastructure
