@@ -24,13 +24,13 @@ first; infrastructure and UI follow once the intelligence layer is proven.
 
 ## Phase 3 — Agent registry and base runtime
 
-- [ ] Define `AgentRuntime` dataclass (llm_model, llm_temperature,
+- [x] Define `AgentRuntime` dataclass (llm_model, llm_temperature,
       system_prompt, tools)
-- [ ] Implement `AGENT_REGISTRY` with stub entries for Tracking, Events,
+- [x] Implement `AGENT_REGISTRY` with stub entries for Tracking, Events,
       and FAQ/SOP agents
-- [ ] Implement generic agent executor that reads from registry and calls
+- [x] Implement generic agent executor that reads from registry and calls
       tools through the Sentinel policy layer
-- [ ] Write unit tests for registry lookup and policy-gated tool dispatch
+- [x] Write unit tests for registry lookup and policy-gated tool dispatch
 
 ## Phase 4 — Router node
 

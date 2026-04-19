@@ -5,7 +5,7 @@ from typing import Annotated, Literal, NotRequired, TypedDict
 class GraphState(TypedDict, total=True):
     query: str
     intent: NotRequired[Literal["TRACKING", "EVENTS", "SOP"] | None]
-    agent_result: NotRequired[dict[str, object] | None]
+    agent_result: NotRequired[object | None]
     audit_log: NotRequired[Annotated[list[dict[str, object]], operator.add]]
     error: NotRequired[str | None]
 

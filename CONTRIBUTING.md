@@ -77,7 +77,8 @@ recreated locally by each developer.
 | `/feature-spec mvp` | Planning an MVP across all roadmap phases |
 | `/next-phase` | Quick feature start without the interview |
 | `/review-branch` | Before every PR |
-| `/changelog` | After every merge |
+| `/ship` | When the feature is done — commit, merge, delete branch, close changelog |
+| `/changelog` | If you merged manually and only need to close the changelog |
 
 ---
 
