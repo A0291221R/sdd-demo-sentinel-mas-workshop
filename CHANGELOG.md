@@ -8,7 +8,8 @@ Entries are created automatically by `/feature-spec` and closed by `/changelog`.
 ### phase-2-sentinel-policy-layer — 2026-04-19
 - Branch: `phase-2-sentinel-policy-layer`
 - Spec: `specs/2026-04-19-sentinel-policy-layer/`
-- Status: in progress
+- Status: merged
+- Summary: Implements SentinelPolicy with frozen policy_map, per-agent/per-tool sliding-window rate limiting, threading.Lock on the prune/check/append sequence, and UTC-aware PolicyRejection. 11 tests, mypy strict clean.
 
 ### phase-1-shared-state-schema — 2026-04-19
 - Branch: `phase-1-shared-state-schema`
