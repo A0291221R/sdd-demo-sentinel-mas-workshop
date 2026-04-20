@@ -20,7 +20,7 @@ resource "aws_codedeploy_deployment_group" "api" {
   }
 
   alarm_configuration {
-    alarms  = [var.api_5xx_alarm_arn]
+    alarms  = [var.api_5xx_alarm_name]
     enabled = true
   }
 

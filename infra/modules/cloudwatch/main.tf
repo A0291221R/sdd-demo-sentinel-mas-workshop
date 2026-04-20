@@ -25,6 +25,68 @@ resource "aws_cloudwatch_metric_alarm" "api_5xx" {
   tags = { Name = "${local.name}-api-5xx-rate" }
 }
 
+resource "aws_cloudwatch_dashboard" "this" {
+  dashboard_name = "${local.name}-dashboard"
+
+  dashboard_body = jsonencode({
+    widgets = [
+      {
+        type = "metric"
+        properties = {
+          title  = "ECS CPU Utilization"
+          region = var.aws_region
+          period = 300
+          stat   = "Average"
+          metrics = [
+            ["AWS/ECS", "CPUUtilization", "ClusterName", var.cluster_name, "ServiceName", var.api_service_name],
+            ["AWS/ECS", "CPUUtilization", "ClusterName", var.cluster_name, "ServiceName", var.central_service_name]
+          ]
+          view = "timeSeries"
+        }
+      },
+      {
+        type = "metric"
+        properties = {
+          title  = "ALB 5xx Errors"
+          region = var.aws_region
+          period = 300
+          stat   = "Sum"
+          metrics = [
+            ["AWS/ApplicationELB", "HTTPCode_Target_5XX_Count", "LoadBalancer", var.alb_arn_suffix]
+          ]
+          view = "timeSeries"
+        }
+      },
+      {
+        type = "metric"
+        properties = {
+          title  = "Policy Rejections"
+          region = var.aws_region
+          period = 300
+          stat   = "Sum"
+          metrics = [
+            ["sentinel", "PolicyRejections"]
+          ]
+          view = "timeSeries"
+        }
+      },
+      {
+        type = "metric"
+        properties = {
+          title  = "SQS Queue Depth"
+          region = var.aws_region
+          period = 300
+          stat   = "Average"
+          metrics = [
+            ["AWS/SQS", "ApproximateNumberOfMessagesVisible", "QueueName", var.sqs_queue_name]
+          ]
+          view = "timeSeries"
+        }
+      }
+    ]
+  })
+}
+
 resource "aws_cloudwatch_metric_alarm" "policy_rejections" {
   alarm_name          = "${local.name}-policy-rejection-rate"
   comparison_operator = "GreaterThanThreshold"

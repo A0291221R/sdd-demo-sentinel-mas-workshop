@@ -131,6 +131,13 @@ locals {
 resource "aws_iam_role" "github_actions" {
   name = "${local.name}-github-actions"
 
+  lifecycle {
+    precondition {
+      condition     = var.create_oidc_provider || var.oidc_provider_arn != ""
+      error_message = "oidc_provider_arn must be set when create_oidc_provider is false."
+    }
+  }
+
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
     Statement = [{

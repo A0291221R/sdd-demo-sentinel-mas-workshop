@@ -20,7 +20,7 @@ resource "aws_db_instance" "this" {
   identifier        = "${local.name}-postgres"
   engine            = "postgres"
   engine_version    = "15"
-  instance_class    = "db.t3.micro"
+  instance_class    = var.instance_class
   allocated_storage = 20
   storage_encrypted = true
 
@@ -32,12 +32,18 @@ resource "aws_db_instance" "this" {
   parameter_group_name   = aws_db_parameter_group.this.name
   vpc_security_group_ids = [var.rds_sg_id]
 
-  # Dev-only: no final snapshot and no deletion protection.
-  # Phase 12 prod: set skip_final_snapshot=false, deletion_protection=true.
-  skip_final_snapshot = true
-  deletion_protection = false
+  skip_final_snapshot       = var.skip_final_snapshot
+  deletion_protection       = var.deletion_protection
+  final_snapshot_identifier = var.skip_final_snapshot ? null : var.final_snapshot_identifier
 
   tags = { Name = "${local.name}-postgres" }
+
+  lifecycle {
+    precondition {
+      condition     = var.skip_final_snapshot || var.final_snapshot_identifier != ""
+      error_message = "final_snapshot_identifier must be set when skip_final_snapshot is false."
+    }
+  }
 }
 
 # Store the full database URL as a Secrets Manager secret so ECS tasks

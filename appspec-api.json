@@ -1,0 +1,17 @@
+{
+  "version": 0.0,
+  "Resources": [
+    {
+      "TargetService": {
+        "Type": "AWS::ECS::Service",
+        "Properties": {
+          "TaskDefinition": "arn:aws:ecs:ap-southeast-1:590183890857:task-definition/sentinel-dev-api:2",
+          "LoadBalancerInfo": {
+            "ContainerName": "api",
+            "ContainerPort": 8000
+          }
+        }
+      }
+    }
+  ]
+}

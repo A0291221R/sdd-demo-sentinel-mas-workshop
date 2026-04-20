@@ -26,7 +26,7 @@ variable "api_tg_name_green" {
   type = string
 }
 
-variable "api_5xx_alarm_arn" {
-  description = "ARN of the CloudWatch alarm that triggers CodeDeploy rollback."
+variable "api_5xx_alarm_name" {
+  description = "Name of the CloudWatch alarm that triggers CodeDeploy rollback."
   type        = string
 }

@@ -84,13 +84,14 @@ resource "aws_ecs_task_definition" "api" {
       protocol      = "tcp"
     }]
 
-    environment = [
+    environment = var.sqs_queue_url_secret_arn != "" ? [] : [
       { name = "QUEUE_URL", value = var.queue_url }
     ]
 
-    secrets = [
-      { name = "DATABASE_URL", valueFrom = var.db_url_secret_arn }
-    ]
+    secrets = concat(
+      [{ name = "DATABASE_URL", valueFrom = var.db_url_secret_arn }],
+      var.sqs_queue_url_secret_arn != "" ? [{ name = "QUEUE_URL", valueFrom = var.sqs_queue_url_secret_arn }] : []
+    )
 
     logConfiguration = {
       logDriver = "awslogs"
@@ -117,13 +118,16 @@ resource "aws_ecs_task_definition" "central" {
     image     = "${aws_ecr_repository.central.repository_url}:latest"
     essential = true
 
-    environment = [
-      { name = "QUEUE_URL", value = var.queue_url }
-    ]
+    environment = concat(
+      [{ name = "PYTHONUNBUFFERED", value = "1" }],
+      var.sqs_queue_url_secret_arn != "" ? [] : [{ name = "QUEUE_URL", value = var.queue_url }]
+    )
 
-    secrets = [
-      { name = "DATABASE_URL", valueFrom = var.db_url_secret_arn }
-    ]
+    secrets = concat(
+      [{ name = "DATABASE_URL", valueFrom = var.db_url_secret_arn }],
+      var.anthropic_api_key_secret_arn != "" ? [{ name = "ANTHROPIC_API_KEY", valueFrom = var.anthropic_api_key_secret_arn }] : [],
+      var.sqs_queue_url_secret_arn != "" ? [{ name = "QUEUE_URL", valueFrom = var.sqs_queue_url_secret_arn }] : []
+    )
 
     logConfiguration = {
       logDriver = "awslogs"
@@ -170,12 +174,18 @@ resource "aws_ecs_service" "api" {
   name            = "${local.name}-api"
   cluster         = aws_ecs_cluster.this.id
   task_definition = aws_ecs_task_definition.api.arn
-  desired_count   = 1
+  desired_count   = var.desired_count
   launch_type     = "FARGATE"
 
   network_configuration {
     subnets         = var.private_subnet_ids
     security_groups = [var.app_sg_id]
+  }
+
+  load_balancer {
+    target_group_arn = var.api_tg_arn_blue
+    container_name   = "api"
+    container_port   = 8000
   }
 
   deployment_controller {
@@ -183,9 +193,9 @@ resource "aws_ecs_service" "api" {
   }
 
   lifecycle {
-    # CodeDeploy manages task_definition and load_balancer after first deploy;
-    # Terraform must not overwrite those fields on subsequent plans.
-    ignore_changes = [task_definition, load_balancer]
+    # CodeDeploy manages task_definition and load_balancer after first deploy.
+    # desired_count is managed by autoscaling after first deploy.
+    ignore_changes = [task_definition, load_balancer, desired_count]
   }
 }
 
@@ -193,12 +203,16 @@ resource "aws_ecs_service" "central" {
   name            = "${local.name}-central"
   cluster         = aws_ecs_cluster.this.id
   task_definition = aws_ecs_task_definition.central.arn
-  desired_count   = 1
+  desired_count   = var.desired_count
   launch_type     = "FARGATE"
 
   network_configuration {
     subnets         = var.private_subnet_ids
     security_groups = [var.app_sg_id]
+  }
+
+  lifecycle {
+    ignore_changes = [desired_count]
   }
 }
 
@@ -214,7 +228,64 @@ resource "aws_ecs_service" "ui" {
     security_groups = [var.app_sg_id]
   }
 
+  load_balancer {
+    target_group_arn = var.ui_target_group_arn
+    container_name   = "ui"
+    container_port   = 80
+  }
+
   lifecycle {
     ignore_changes = [task_definition]
+  }
+}
+
+# Autoscaling — only created when enable_autoscaling = true (prod)
+resource "aws_appautoscaling_target" "api" {
+  count              = var.enable_autoscaling ? 1 : 0
+  max_capacity       = var.autoscaling_max_capacity
+  min_capacity       = var.autoscaling_min_capacity
+  resource_id        = "service/${aws_ecs_cluster.this.name}/${aws_ecs_service.api.name}"
+  scalable_dimension = "ecs:service:DesiredCount"
+  service_namespace  = "ecs"
+}
+
+resource "aws_appautoscaling_target" "central" {
+  count              = var.enable_autoscaling ? 1 : 0
+  max_capacity       = var.autoscaling_max_capacity
+  min_capacity       = var.autoscaling_min_capacity
+  resource_id        = "service/${aws_ecs_cluster.this.name}/${aws_ecs_service.central.name}"
+  scalable_dimension = "ecs:service:DesiredCount"
+  service_namespace  = "ecs"
+}
+
+resource "aws_appautoscaling_policy" "api_cpu" {
+  count              = var.enable_autoscaling ? 1 : 0
+  name               = "${local.name}-api-cpu-scaling"
+  policy_type        = "TargetTrackingScaling"
+  resource_id        = aws_appautoscaling_target.api[0].resource_id
+  scalable_dimension = aws_appautoscaling_target.api[0].scalable_dimension
+  service_namespace  = aws_appautoscaling_target.api[0].service_namespace
+
+  target_tracking_scaling_policy_configuration {
+    predefined_metric_specification {
+      predefined_metric_type = "ECSServiceAverageCPUUtilization"
+    }
+    target_value = 70.0
+  }
+}
+
+resource "aws_appautoscaling_policy" "central_cpu" {
+  count              = var.enable_autoscaling ? 1 : 0
+  name               = "${local.name}-central-cpu-scaling"
+  policy_type        = "TargetTrackingScaling"
+  resource_id        = aws_appautoscaling_target.central[0].resource_id
+  scalable_dimension = aws_appautoscaling_target.central[0].scalable_dimension
+  service_namespace  = aws_appautoscaling_target.central[0].service_namespace
+
+  target_tracking_scaling_policy_configuration {
+    predefined_metric_specification {
+      predefined_metric_type = "ECSServiceAverageCPUUtilization"
+    }
+    target_value = 70.0
   }
 }
