@@ -7,6 +7,14 @@ Entries are created automatically by `/feature-spec` and closed by `/changelog`.
 
 ## 2026-04-20
 
+### phase-12-prod-hardening
+- Branch: `phase-12-prod-hardening`
+- Spec: `specs/2026-04-20-prod-hardening/`
+- Status: merged
+- Summary: Adds Terraform prod workspace, Secrets Manager entries, CloudWatch dashboard, Fargate autoscaling, and runbook; fixes docker-compose local dev stack with shared Postgres task store and LocalStack SQS wiring; fixes ECS central service entrypoint, UI ALB routing for /result/*, and UI production build env.
+
+## 2026-04-20
+
 ### phase-11-cicd-pipeline
 - Branch: `phase-11-cicd-pipeline`
 - Spec: `specs/2026-04-20-cicd-pipeline/`
