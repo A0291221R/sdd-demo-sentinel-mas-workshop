@@ -1,4 +1,4 @@
-from typing import Hashable
+from typing import Any, Hashable
 
 from langgraph.graph import END, START, StateGraph
 from langgraph.graph.state import CompiledStateGraph
@@ -18,7 +18,7 @@ _INTENT_NODE_MAP: dict[str, str] = {
 }
 
 
-def build_graph() -> CompiledStateGraph[GraphState]:
+def build_graph() -> CompiledStateGraph[GraphState, None, Any, Any]:
     def _route(state: GraphState) -> str:
         intent = state.get("intent")
         if intent is not None and intent in _INTENT_NODE_MAP:
@@ -40,7 +40,7 @@ def build_graph() -> CompiledStateGraph[GraphState]:
     graph.add_edge("events", END)
     graph.add_edge("faq", END)
 
-    return graph.compile()  # type: ignore[return-value]
+    return graph.compile()
 
 
-SENTINEL_GRAPH: CompiledStateGraph[GraphState] = build_graph()
+SENTINEL_GRAPH: CompiledStateGraph[GraphState, None, Any, Any] = build_graph()
