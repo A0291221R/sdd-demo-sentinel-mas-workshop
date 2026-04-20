@@ -1,12 +1,13 @@
 import json
 import logging
+import os
 import time
 from typing import Any
 
 from services.central.crew import SENTINEL_GRAPH
 from services.central.state import make_state
-from services.api.models import TaskResponse  # TODO Phase 10: replace with RDS write
-from services.api.task_store import TASK_STORE, save_task, serialize_agent_result
+from services.api.models import TaskResponse
+from services.api.task_store import get_task, save_task, serialize_agent_result
 
 __all__ = ["consume_one", "run_consumer"]
 
@@ -35,9 +36,7 @@ def consume_one(sqs_client: Any, queue_url: str) -> bool:
         sqs_client.delete_message(QueueUrl=queue_url, ReceiptHandle=receipt_handle)
         return True
 
-    existing = TASK_STORE.get(task_id)
-    # Allow reprocessing of "pending" tasks (e.g. redelivery after a prior graph
-    # failure that left the task in pending state). Only skip if already completed.
+    existing = get_task(task_id)
     if existing is not None and existing.status != "pending":
         logger.info("Duplicate task_id %s already completed, skipping", task_id)
         sqs_client.delete_message(QueueUrl=queue_url, ReceiptHandle=receipt_handle)
@@ -71,3 +70,17 @@ def run_consumer(sqs_client: Any, queue_url: str) -> None:
         except Exception as exc:
             logger.error("Consumer loop error: %s", exc)
             time.sleep(5)
+
+
+if __name__ == "__main__":
+    import boto3
+
+    logging.basicConfig(level=logging.INFO)
+    queue_url = os.environ["QUEUE_URL"]
+    region = os.environ.get("AWS_REGION", os.environ.get("AWS_DEFAULT_REGION", "ap-southeast-1"))
+    kwargs: dict = {"region_name": region}
+    if endpoint_url := os.environ.get("AWS_ENDPOINT_URL"):
+        kwargs["endpoint_url"] = endpoint_url
+    sqs = boto3.client("sqs", **kwargs)
+    logger.info("Starting consumer on %s", queue_url)
+    run_consumer(sqs, queue_url)

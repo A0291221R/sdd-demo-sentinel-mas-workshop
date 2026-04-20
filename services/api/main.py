@@ -1,4 +1,5 @@
 import json
+import os
 import uuid
 from typing import Any
 
@@ -8,15 +9,17 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from .models import QueryRequest, TaskResponse
 from .settings import settings
-from .task_store import get_task, save_task
+from .task_store import get_task, init_db, save_task
 
 __all__ = ["app"]
 
 app = FastAPI(title="Sentinel MAS API")
 
+init_db()
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],
+    allow_origins=["http://localhost:5173", "http://localhost:3000"],
     allow_methods=["GET", "POST"],
     allow_headers=["Content-Type"],
 )
@@ -27,7 +30,10 @@ _sqs_client: Any = None
 def _get_sqs_client() -> Any:
     global _sqs_client
     if _sqs_client is None:
-        _sqs_client = boto3.client("sqs")
+        kwargs = {}
+        if endpoint := os.environ.get("AWS_ENDPOINT_URL"):
+            kwargs["endpoint_url"] = endpoint
+        _sqs_client = boto3.client("sqs", **kwargs)
     return _sqs_client
 
 

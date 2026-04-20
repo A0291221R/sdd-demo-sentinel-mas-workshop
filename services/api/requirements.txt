@@ -3,5 +3,6 @@ uvicorn[standard]
 boto3
 pydantic
 pydantic-settings
+psycopg2-binary
 httpx
 pytest

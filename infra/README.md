@@ -39,6 +39,11 @@ aws dynamodb create-table \
 
 Then update `backend.tf`, replacing `<account-id>` with your actual account ID.
 
+# Optional, Create a cert manually first, then apply
+aws acm request-certificate \
+    --domain-name dev.sentinel-mas.com \
+    --validation-method DNS \
+    --region ap-southeast-1
 ---
 
 ## Usage
@@ -51,13 +56,13 @@ terraform init
 
 # Preview changes
 terraform plan \
-  -var="db_password=<secret>" \
-  -var="domain_name=sentinel-dev.example.com"
+  -var="db_password=localdev" \
+  -var="domain_name=dev.sentinel-mas.com"
 
 # Apply
 terraform apply \
-  -var="db_password=<secret>" \
-  -var="domain_name=sentinel-dev.example.com"
+  -var="db_password=localdev" \
+  -var="domain_name=dev.sentinel-mas.com"
 ```
 
 ---

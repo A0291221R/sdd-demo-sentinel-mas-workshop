@@ -1,0 +1,174 @@
+# 1. Authenticate Docker to ECR
+aws ecr get-login-password --region ap-southeast-1 |\
+	docker login --username AWS --password-stdin \
+	590183890857.dkr.ecr.ap-southeast-1.amazonaws.com
+
+# 2. Build and push api
+docker build -t sentinel-dev-api -f services/api/Dockerfile .
+docker tag sentinel-dev-api:latest 590183890857.dkr.ecr.ap-southeast-1.amazonaws.com/sentinel-dev-api:latest
+docker push 590183890857.dkr.ecr.ap-southeast-1.amazonaws.com/sentinel-dev-api:latest
+
+# 3. Build and push central
+docker build -t sentinel-dev-central -f services/central/Dockerfile .
+docker tag sentinel-dev-central:latest 590183890857.dkr.ecr.ap-southeast-1.amazonaws.com/sentinel-dev-central:latest
+docker push 590183890857.dkr.ecr.ap-southeast-1.amazonaws.com/sentinel-dev-central:latest
+
+# 4. Build and push ui
+docker build -t sentinel-dev-ui -f services/ui/Dockerfile .
+docker tag sentinel-dev-ui:latest 590183890857.dkr.ecr.ap-southeast-1.amazonaws.com/sentinel-dev-ui:latest
+docker push 590183890857.dkr.ecr.ap-southeast-1.amazonaws.com/sentinel-dev-ui:latest
+
+
+
+# Force a new deployment (quickest)
+
+aws deploy list-deployment-groups --application-name sentinel-dev-api --region ap-southeast-1
+
+# deployment
+aws deploy create-deployment --application-name sentinel-dev-api --deployment-group-name sentinel-dev-api-dg --region ap-southeast-1
+
+
+# check task definition
+aws ecs describe-services --cluster sentinel-dev --services sentinel-dev-api --region ap-southeast-1 --query "services[0].taskDefinition"
+
+
+aws ecs describe-task-definition --task-definition sentinel-dev-api:2 --region ap-southeast-1 --query "taskDefinition.containerDefinitions[0].{name:name,port:portMappings[0].containerPort}" 
+
+
+  aws deploy create-deployment --application-name sentinel-dev-api --deployment-group-name \
+  sentinel-dev-api-dg --region ap-southeast-1 --revision \
+  '{"revisionType":"AppSpecContent","appSpecContent":{"content":"{\"version\":0.0,\"Resources\":[{\"TargetService\":{\"Type\":\"AWS::ECS::Service\",\"Properties\":{\"TaskDefinition  \":\"arn:aws:ecs:ap-southeast-1:590183890857:task-definition/sentinel-dev-api:2\",\"LoadB  alancerInfo\":{\"ContainerName\":\"api\",\"ContainerPort\":8000}}}}]}"}}'
+
+
+aws deploy get-deployment --deployment-id d-9WZAMJ2II --region ap-southeast-1 --query \
+	"deploymentInfo.{status:status,overview:deploymentOverview}"
+
+aws deploy get-deployment --deployment-id d-9WZAMJ2II --region ap-southeast-1 --query \
+	"deploymentInfo.{status:status,errorInfo:errorInformation}"
+
+
+aws deploy create-deployment --application-name sentinel-dev-api --deployment-group-name \
+  sentinel-dev-api-dg --region ap-southeast-1 --revision \
+  "{\"revisionType\":\"AppSpecContent\",\"appSpecContent\":{\"content\":$(cat appspec-api.json | python -c 'import json,sys; print(json.dumps(sys.stdin.read()))'),\"sha256\":\"ee0279a0a87747ec57f510447486fc29bfb09adc450b5cb8043dd6f4a9e21078\"}}"
+
+
+cat appspec-api.json | python -c "import json,sys,hashlib; content=sys.stdin.read(); print(hashlib.sha256(content.encode()).hexdigest())"
+
+
+
+
+  aws ecs describe-services --cluster sentinel-dev --services sentinel-dev-central sentinel-dev-ui --region ap-southeast-1 \
+  --query "services[*].{name:serviceName,controller:deploymentController.type}"
+
+
+aws ecs update-service --cluster sentinel-dev --service sentinel-dev-central --force-new-deployment --region ap-southeast-1
+
+
+  aws ecr describe-images --repository-name sentinel-dev-central --region ap-southeast-1 \
+  --query "imageDetails[*].{tag:imageTags[0],pushed:imagePushedAt}"
+
+
+aws ecs describe-task-definition --task-definition sentinel-dev-central --region \
+  ap-southeast-1 --query "taskDefinition.executionRoleArn"
+
+
+aws iam list-attached-role-policies --role-name sentinel-dev-ecs-execution --query         "AttachedPolicies[*].PolicyName"
+
+
+ aws ecs describe-services --cluster sentinel-dev --services sentinel-dev-central --region   ap-southeast-1 --query "services[0].deployments[*].{status:status,running:runningCount,failed:failedTasks,reason:rolloutStateReason}"
+
+
+  aws ecs list-tasks --cluster sentinel-dev --service-name sentinel-dev-central \
+  --desired-status STOPPED --region ap-southeast-1 --query "taskArns[0]" --output text
+
+
+aws ecs describe-tasks --cluster sentinel-dev --tasks arn:aws:ecs:ap-southeast-1:590183890857:task/sentinel-dev/029c5e0ee2344314b80db874b6834b5d --region ap-southeast-1 --query  "tasks[0].containers[0].{reason:reason,exitCode:exitCode}"
+
+aws ecs describe-task-definition --task-definition sentinel-dev-central --region ap-southeast-1 --query "taskDefinition.containerDefinitions[0].{command:command,entryPoint:entryPoint}" 
+
+
+
+  aws logs get-log-events --log-group-name /ecs/sentinel-dev-central --log-stream-name $(aws logs describe-log-streams --log-group-name /ecs/sentinel-dev-central --region ap-southeast-1 --order-by LastEventTime --descending --query "logStreams[0].logStreamName" --output text) --region ap-southeast-1 --query "events[-10:].message" --output text
+
+aws logs describe-log-streams --log-group-name '//ecs/sentinel-dev-central' --region ap-southeast-1 --order-by LastEventTime --descending --query "logStreams[0].logStreamName" --output text
+
+
+  MSYS_NO_PATHCONV=1 aws logs describe-log-streams --log-group-name /ecs/sentinel-dev-central --region ap-southeast-1 --order-by LastEventTime --descending --query "logStreams[0].logStreamName" --output text
+
+
+MSYS_NO_PATHCONV=1 aws logs get-log-events --log-group-name /ecs/sentinel-dev-central      --log-stream-name central/central/09722fcee5fb4d6b997a5e35445c8f6c --region ap-southeast-1 --query "events[*].message" --output text
+
+
+MSYS_NO_PATHCONV=1 aws logs get-log-events --log-group-name /ecs/sentinel-dev-central --log-stream-name central/central/62f15a0560b046439cacf2ffba71c59d --region  ap-southeast-1 --query "events[*].message" --output text
+
+aws ecs describe-task-definition --task-definition sentinel-dev-central --region ap-southeast-1 --query "taskDefinition.containerDefinitions[0].{env:environment,logConfig:logConfiguration}"
+
+docker build -t 590183890857.dkr.ecr.ap-southeast-1.amazonaws.com/sentinel-dev-central:latest -f services/central/Dockerfile .
+docker push 590183890857.dkr.ecr.ap-southeast-1.amazonaws.com/sentinel-dev-central:latest
+
+aws ecs update-service --cluster sentinel-dev --service sentinel-dev-central --force-new-deployment --region ap-southeast-1
+
+aws ecs describe-services --cluster sentinel-dev --services sentinel-dev-central --region ap-southeast-1 --query "services[0].{running:runningCount,pending:pendingCount,desired:desiredCount,reason:deployments[0].rolloutStateReason}"
+
+MSYS_NO_PATHCONV=1 aws logs describe-log-streams --log-group-name /ecs/sentinel-dev-central --region ap-southeast-1 --order-by LastEventTime --descending --query "logStreams[0].logStreamName" --output text
+
+MSYS_NO_PATHCONV=1 aws logs get-log-events --log-group-name /ecs/sentinel-dev-central \
+  --log-stream-name central/central/c49127d3864d48c4a0bfd05feff6cad0 --region \
+  ap-southeast-1 --query "events[*].message" --output text
+
+~~~~
+
+docker build -t 590183890857.dkr.ecr.ap-southeast-1.amazonaws.com/sentinel-dev-api:latest -f services/api/Dockerfile .
+docker push 590183890857.dkr.ecr.ap-southeast-1.amazonaws.com/sentinel-dev-api:latest 
+
+docker build -t 590183890857.dkr.ecr.ap-southeast-1.amazonaws.com/sentinel-dev-ui:latest -f services/ui/Dockerfile .
+docker push 590183890857.dkr.ecr.ap-southeast-1.amazonaws.com/sentinel-dev-ui:latest   
+
+~~~~
+
+Deploy API via CodeDeploy:
+
+aws deploy create-deployment --application-name sentinel-dev-api --deployment-group-name \
+	sentinel-dev-api-dg --region ap-southeast-1 --revision \
+  	"{\"revisionType\":\"AppSpecContent\",\"appSpecContent\":{\"content\":$(cat appspec-api.json | python -c 'import json,sys; print(json.dumps(sys.stdin.read()))'),\"sha256\":\"ee0279a0a87747ec57f510447486fc29bfb09adc450b5cb8043dd6f4a9e21078\"}}"
+
+aws deploy get-deployment --deployment-id d-VAVO9G3II --region ap-southeast-1 --query "deploymentInfo.{status:status,errorInfo:errorInformation}"
+~~~~
+  Deploy UI via ECS:
+
+aws ecs update-service --cluster sentinel-dev --service sentinel-dev-ui --force-new-deployment --region ap-southeast-1
+
+aws ecs describe-services --cluster sentinel-dev --services sentinel-dev-ui --region ap-southeast-1 --query "services[0].{running:runningCount,pending:pendingCount,desired:desiredCount,reason:deployments[0].rolloutStateReason}"
+
+# dev-api-blue
+aws elbv2 describe-target-health --target-group-arn \
+	arn:aws:elasticloadbalancing:ap-southeast-1:590183890857:targetgroup/sentinel-dev-api-blue/0789a5d68eb1fa70 --region \
+	ap-southeast-1 --query "TargetHealthDescriptions[*].{state:TargetHealth.State,reason:TargetHealth.Reason,description:TargetHealth.Description}"
+
+# dev-api-green
+aws elbv2 describe-target-health --target-group-arn \
+	arn:aws:elasticloadbalancing:ap-southeast-1:590183890857:targetgroup/sentinel-dev-api-green/7d13f60f05f06bba --region \
+	ap-southeast-1 --query "TargetHealthDescriptions[*].{state:TargetHealth.State,reason:TargetHealth.Reason,description:TargetHealth.Description}"
+
+# dev-ui
+aws elbv2 describe-target-health --target-group-arn \
+	arn:aws:elasticloadbalancing:ap-southeast-1:590183890857:targetgroup/sentinel-dev-ui/a14f3201fc674d2b --region \
+	ap-southeast-1 --query "TargetHealthDescriptions[*].{state:TargetHealth.State,reason:TargetHealth.Reason,description:TargetHealth.Description}"
+
+
+
+aws elbv2 describe-target-health --target-group-arn \
+	arn:aws:elasticloadbalancing:ap-southeast-1:590183890857:targetgroup/sentinel-dev-ui/a14f3201fc674d2b \
+	--region ap-southeast-1 --query "TargetHealthDescriptions[*].{state:TargetHealth.State,reason:TargetHealth.Reason,description:TargetHealth.Description}"
+
+
+aws elbv2 describe-listeners --load-balancer-arn $(aws elbv2 describe-load-balancers --region ap-southeast-1 --query "LoadBalancers[0].LoadBalancerArn" --output text) \
+	--region ap-southeast-1 --query "Listeners[*].{port:Port,arn:ListenerArn}"
+
+
+aws elbv2 describe-rules --listener-arn arn:aws:elasticloadbalancing:ap-southeast-1:590183890857:listener/app/sentinel-dev-alb/72e04f72ebf8178a/259f306b8e306eb9 \
+	--region ap-southeast-1 --query "Rules[*].{priority:Priority,conditions:Conditions,targetGroup:Actions[0].TargetGroupArn}"
+
+
+aws ecs describe-services --cluster sentinel-dev --services sentinel-dev-ui \
+	--region ap-southeast-1 --query "services[0].loadBalancers" 

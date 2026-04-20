@@ -26,3 +26,21 @@ variable "github_repo" {
   type        = string
   default     = "A0291221R/sdd-demo-sentinel-mas-workshop"
 }
+
+variable "create_oidc_provider" {
+  description = "Set false if the GitHub OIDC provider already exists in this AWS account."
+  type        = bool
+  default     = false
+}
+
+variable "oidc_provider_arn" {
+  description = "ARN of the existing OIDC provider when create_oidc_provider is false."
+  type        = string
+  default     = ""
+}
+
+variable "certificate_arn" {
+  description = "ARN of a pre-existing validated ACM certificate. When set, no new ACM cert is created."
+  type        = string
+  default     = ""
+}

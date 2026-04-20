@@ -1,0 +1,4 @@
+db_password       = "<set via CI secret or manual>"
+domain_name       = "dev.sentinel-mas.com"
+oidc_provider_arn = "arn:aws:iam::590183890857:oidc-provider/token.actions.githubusercontent.com"
+# certificate_arn = "arn:aws:acm:ap-southeast-1:590183890857:certificate/<id>"  # optional: use pre-existing validated cert

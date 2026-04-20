@@ -1,15 +1,16 @@
 module "networking" {
-  source      = "./modules/networking"
-  environment = var.environment
+  source            = "../../modules/networking"
+  environment       = var.environment
+  nat_gateway_count = 2
 }
 
 module "sqs" {
-  source      = "./modules/sqs"
+  source      = "../../modules/sqs"
   environment = var.environment
 }
 
 module "iam" {
-  source               = "./modules/iam"
+  source               = "../../modules/iam"
   environment          = var.environment
   sqs_queue_arn        = module.sqs.queue_arn
   github_repo          = var.github_repo
@@ -18,15 +19,25 @@ module "iam" {
 }
 
 module "rds" {
-  source             = "./modules/rds"
+  source             = "../../modules/rds"
   environment        = var.environment
   private_subnet_ids = module.networking.private_subnet_ids
   rds_sg_id          = module.networking.rds_sg_id
   db_password        = var.db_password
+
+  instance_class            = "db.t3.small"
+  deletion_protection       = true
+  skip_final_snapshot       = false
+  final_snapshot_identifier = "sentinel-prod-final-snapshot"
+}
+
+module "secrets" {
+  source      = "../../modules/secrets"
+  environment = var.environment
 }
 
 module "ecs" {
-  source      = "./modules/ecs"
+  source      = "../../modules/ecs"
   environment = var.environment
   aws_region  = var.aws_region
 
@@ -36,14 +47,20 @@ module "ecs" {
   api_task_role_arn     = module.iam.api_task_role_arn
   central_task_role_arn = module.iam.central_task_role_arn
 
-  api_tg_arn_blue     = module.alb.api_tg_arn_blue
-  ui_target_group_arn = module.alb.ui_tg_arn
-  queue_url           = module.sqs.queue_url
-  db_url_secret_arn   = module.rds.db_url_secret_arn
+  api_tg_arn_blue              = module.alb.api_tg_arn_blue
+  queue_url                    = module.sqs.queue_url
+  db_url_secret_arn            = module.rds.db_url_secret_arn
+  anthropic_api_key_secret_arn = module.secrets.anthropic_api_key_secret_arn
+  sqs_queue_url_secret_arn     = module.secrets.sqs_queue_url_secret_arn
+
+  desired_count            = 2
+  enable_autoscaling       = true
+  autoscaling_min_capacity = 2
+  autoscaling_max_capacity = 4
 }
 
 module "alb" {
-  source      = "./modules/alb"
+  source      = "../../modules/alb"
   environment = var.environment
 
   vpc_id            = module.networking.vpc_id
@@ -54,7 +71,7 @@ module "alb" {
 }
 
 module "cloudwatch" {
-  source      = "./modules/cloudwatch"
+  source      = "../../modules/cloudwatch"
   environment = var.environment
   aws_region  = var.aws_region
 
@@ -67,7 +84,7 @@ module "cloudwatch" {
 }
 
 module "codedeploy" {
-  source      = "./modules/codedeploy"
+  source      = "../../modules/codedeploy"
   environment = var.environment
 
   codedeploy_role_arn = module.iam.codedeploy_role_arn
