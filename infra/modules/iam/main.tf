@@ -197,6 +197,23 @@ resource "aws_iam_role_policy" "github_actions_ecr_deploy" {
         Action = [
           "ecs:UpdateService",
           "ecs:DescribeServices",
+          "ecs:RegisterTaskDefinition",
+          "ecs:DescribeTaskDefinition",
+        ]
+        Resource = "*"
+      },
+      {
+        # Required when registering a task definition that references execution/task roles
+        Effect   = "Allow"
+        Action   = ["iam:PassRole"]
+        Resource = "arn:aws:iam::*:role/sentinel-${var.environment}-*"
+      },
+      {
+        # Required by `aws deploy wait deployment-successful`
+        Effect = "Allow"
+        Action = [
+          "codedeploy:ListDeploymentTargets",
+          "codedeploy:GetDeploymentTarget",
         ]
         Resource = "*"
       },

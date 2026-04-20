@@ -32,3 +32,8 @@ output "acm_validation_cname" {
   description = "DNS CNAME record required to validate the ACM certificate."
   value       = module.alb.acm_validation_cname
 }
+
+output "github_actions_role_arn" {
+  description = "ARN of the GitHub Actions OIDC role — set as AWS_DEPLOY_ROLE_ARN repository secret."
+  value       = module.iam.github_actions_role_arn
+}
