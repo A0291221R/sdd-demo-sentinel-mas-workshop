@@ -12,7 +12,7 @@ permissions:
 
 jobs:
   deploy:
-    name: Trigger CodeDeploy (api) and ECS rolling (central)
+    name: Deploy api (blue/green), central & ui (rolling)
     runs-on: ubuntu-latest
     if: >-
       github.event.workflow_run.conclusion == 'success' &&
@@ -23,6 +23,7 @@ jobs:
       ECS_CLUSTER: ${{ vars.ECS_CLUSTER_NAME || 'sentinel-dev' }}
       CODEDEPLOY_APP: ${{ vars.CODEDEPLOY_APP_NAME || 'sentinel-dev-api' }}
       CODEDEPLOY_DG: ${{ vars.CODEDEPLOY_DG_NAME || 'sentinel-dev-api-dg' }}
+      # Full 40-char SHA — must match the tag used by build-push.yml
       IMAGE_TAG: ${{ github.event.workflow_run.head_sha }}
 
     steps:
@@ -49,64 +50,49 @@ jobs:
             --task-definition sentinel-dev-api \
             --query taskDefinition --output json)
 
-          NEW_ARN=$(python3 - <<'PYEOF'
-          import json, subprocess, os, sys
+          NEW_TD=$(echo "$CURRENT" | jq \
+            --arg img "$API_IMAGE" \
+            '.containerDefinitions |= map(if .name == "api" then .image = $img else . end)
+             | del(.taskDefinitionArn, .revision, .status,
+                   .requiresAttributes, .compatibilities,
+                   .registeredAt, .registeredBy)')
 
-          td = json.loads(os.environ["CURRENT"])
-          for c in td.get("containerDefinitions", []):
-              if c["name"] == "api":
-                  c["image"] = os.environ["API_IMAGE"]
+          NEW_ARN=$(aws ecs register-task-definition \
+            --cli-input-json "$NEW_TD" \
+            --query 'taskDefinition.taskDefinitionArn' \
+            --output text)
 
-          # Strip read-only fields that RegisterTaskDefinition rejects
-          for key in ["taskDefinitionArn", "revision", "status",
-                      "requiresAttributes", "compatibilities",
-                      "registeredAt", "registeredBy"]:
-              td.pop(key, None)
-
-          result = subprocess.run(
-              ["aws", "ecs", "register-task-definition",
-               "--cli-input-json", json.dumps(td),
-               "--query", "taskDefinition.taskDefinitionArn",
-               "--output", "text"],
-              capture_output=True, text=True, check=True
-          )
-          print(result.stdout.strip())
-          PYEOF
-          )
           echo "task_def_arn=${NEW_ARN}" >> "$GITHUB_OUTPUT"
 
       - name: CodeDeploy — api (blue/green)
         run: |
           TASK_DEF_ARN="${{ steps.api-taskdef.outputs.task_def_arn }}"
 
-          APPSPEC=$(python3 -c "
-          import json, os
-          spec = {
-            'version': 0,
-            'Resources': [{
-              'TargetService': {
-                'Type': 'AWS::ECS::Service',
-                'Properties': {
-                  'TaskDefinition': os.environ['TASK_DEF_ARN'],
-                  'LoadBalancerInfo': {
-                    'ContainerName': 'api',
-                    'ContainerPort': 8000
-                  }
-                }
-              }
-            }]
-          }
-          print(json.dumps(spec))
-          " TASK_DEF_ARN="$TASK_DEF_ARN")
+          CONTENT=$(jq -cn \
+            --arg taskdef "$TASK_DEF_ARN" \
+            '{version:0,Resources:[{TargetService:{Type:"AWS::ECS::Service",
+              Properties:{TaskDefinition:$taskdef,
+                LoadBalancerInfo:{ContainerName:"api",ContainerPort:8000}}}}]}')
 
-          SHA256=$(printf '%s' "$APPSPEC" | sha256sum | awk '{print $1}')
+          SHA256=$(printf '%s' "$CONTENT" | sha256sum | awk '{print $1}')
 
-          aws deploy create-deployment \
+          jq -n \
+            --arg content "$CONTENT" \
+            --arg sha256  "$SHA256" \
+            '{revisionType:"AppSpecContent",
+              appSpecContent:{content:$content,sha256:$sha256}}' \
+            > /tmp/revision.json
+
+          DEPLOYMENT_ID=$(aws deploy create-deployment \
             --application-name "$CODEDEPLOY_APP" \
             --deployment-group-name "$CODEDEPLOY_DG" \
             --deployment-config-name CodeDeployDefault.ECSCanary10Percent5Minutes \
             --description "Deploy ${IMAGE_TAG}" \
-            --revision "revisionType=AppSpecContent,appSpecContent={content='${APPSPEC}',sha256='${SHA256}'}"
+            --revision file:///tmp/revision.json \
+            --query deploymentId --output text)
+
+          echo "Deployment ID: ${DEPLOYMENT_ID}"
+          aws deploy wait deployment-successful --deployment-id "$DEPLOYMENT_ID"
 
       # ── central: register new task definition, then rolling update ──────────
 
@@ -119,29 +105,18 @@ jobs:
             --task-definition sentinel-dev-central \
             --query taskDefinition --output json)
 
-          NEW_ARN=$(python3 - <<'PYEOF'
-          import json, subprocess, os
+          NEW_TD=$(echo "$CURRENT" | jq \
+            --arg img "$CENTRAL_IMAGE" \
+            '.containerDefinitions |= map(if .name == "central" then .image = $img else . end)
+             | del(.taskDefinitionArn, .revision, .status,
+                   .requiresAttributes, .compatibilities,
+                   .registeredAt, .registeredBy)')
 
-          td = json.loads(os.environ["CURRENT"])
-          for c in td.get("containerDefinitions", []):
-              if c["name"] == "central":
-                  c["image"] = os.environ["CENTRAL_IMAGE"]
+          NEW_ARN=$(aws ecs register-task-definition \
+            --cli-input-json "$NEW_TD" \
+            --query 'taskDefinition.taskDefinitionArn' \
+            --output text)
 
-          for key in ["taskDefinitionArn", "revision", "status",
-                      "requiresAttributes", "compatibilities",
-                      "registeredAt", "registeredBy"]:
-              td.pop(key, None)
-
-          result = subprocess.run(
-              ["aws", "ecs", "register-task-definition",
-               "--cli-input-json", json.dumps(td),
-               "--query", "taskDefinition.taskDefinitionArn",
-               "--output", "text"],
-              capture_output=True, text=True, check=True
-          )
-          print(result.stdout.strip())
-          PYEOF
-          )
           echo "task_def_arn=${NEW_ARN}" >> "$GITHUB_OUTPUT"
 
       - name: ECS rolling update — central
@@ -152,3 +127,37 @@ jobs:
             --cluster "$ECS_CLUSTER" \
             --service "$ECS_SERVICE" \
             --task-definition "${{ steps.central-taskdef.outputs.task_def_arn }}"
+
+      # ── ui: register new task definition, then rolling update ───────────────
+
+      - name: Register new ui task definition
+        id: ui-taskdef
+        env:
+          UI_IMAGE: ${{ steps.ecr.outputs.registry }}/sentinel-dev-ui:${{ env.IMAGE_TAG }}
+        run: |
+          CURRENT=$(aws ecs describe-task-definition \
+            --task-definition sentinel-dev-ui \
+            --query taskDefinition --output json)
+
+          NEW_TD=$(echo "$CURRENT" | jq \
+            --arg img "$UI_IMAGE" \
+            '.containerDefinitions |= map(if .name == "ui" then .image = $img else . end)
+             | del(.taskDefinitionArn, .revision, .status,
+                   .requiresAttributes, .compatibilities,
+                   .registeredAt, .registeredBy)')
+
+          NEW_ARN=$(aws ecs register-task-definition \
+            --cli-input-json "$NEW_TD" \
+            --query 'taskDefinition.taskDefinitionArn' \
+            --output text)
+
+          echo "task_def_arn=${NEW_ARN}" >> "$GITHUB_OUTPUT"
+
+      - name: ECS rolling update — ui
+        env:
+          ECS_SERVICE: ${{ vars.ECS_UI_SERVICE_NAME || 'sentinel-dev-ui' }}
+        run: |
+          aws ecs update-service \
+            --cluster "$ECS_CLUSTER" \
+            --service "$ECS_SERVICE" \
+            --task-definition "${{ steps.ui-taskdef.outputs.task_def_arn }}"
