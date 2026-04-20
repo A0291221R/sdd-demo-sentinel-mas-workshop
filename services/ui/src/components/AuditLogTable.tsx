@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import type { TaskResponse } from "../api";
 
 const PAGE_SIZE = 10;
@@ -13,17 +13,14 @@ interface AuditLogTableProps {
 
 export default function AuditLogTable({ rows }: AuditLogTableProps) {
   const [page, setPage] = useState(0);
-
-  useEffect(() => {
-    setPage(0);
-  }, [rows.length]);
+  const totalPages = Math.ceil(rows.length / PAGE_SIZE);
+  const safePage = Math.min(page, Math.max(0, totalPages - 1));
 
   if (rows.length === 0) {
     return <p className="placeholder">No completed queries yet.</p>;
   }
 
-  const totalPages = Math.ceil(rows.length / PAGE_SIZE);
-  const slice = rows.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
+  const slice = rows.slice(safePage * PAGE_SIZE, (safePage + 1) * PAGE_SIZE);
 
   return (
     <div className="audit-log">
@@ -49,15 +46,15 @@ export default function AuditLogTable({ rows }: AuditLogTableProps) {
       </table>
       {totalPages > 1 && (
         <div className="pagination">
-          <button onClick={() => setPage((p) => p - 1)} disabled={page === 0}>
+          <button onClick={() => setPage((p) => p - 1)} disabled={safePage === 0}>
             Previous
           </button>
           <span>
-            {page + 1} / {totalPages}
+            {safePage + 1} / {totalPages}
           </span>
           <button
             onClick={() => setPage((p) => p + 1)}
-            disabled={page >= totalPages - 1}
+            disabled={safePage >= totalPages - 1}
           >
             Next
           </button>

@@ -3,7 +3,7 @@ import os
 import uuid
 from typing import Any
 
-import boto3  # type: ignore[import-untyped]
+import boto3
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 

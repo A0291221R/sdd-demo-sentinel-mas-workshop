@@ -5,7 +5,7 @@ import pytest
 from fastapi.testclient import TestClient
 
 from services.api.main import app, set_sqs_client
-from services.api.task_store import TASK_STORE, TaskResponse
+from services.api.task_store import TASK_STORE
 from services.central.consumer import consume_one
 
 UUID4_RE = re.compile(

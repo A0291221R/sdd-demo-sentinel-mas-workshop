@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import os
 from collections import defaultdict, deque
 from dataclasses import dataclass
@@ -24,7 +26,7 @@ def _emit_rejection_metric() -> None:
     if not os.environ.get("AWS_DEFAULT_REGION"):
         return
     try:
-        import boto3  # type: ignore[import-untyped]
+        import boto3
 
         boto3.client("cloudwatch").put_metric_data(
             Namespace="sentinel",

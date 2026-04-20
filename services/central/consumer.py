@@ -78,7 +78,7 @@ if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
     queue_url = os.environ["QUEUE_URL"]
     region = os.environ.get("AWS_REGION", os.environ.get("AWS_DEFAULT_REGION", "ap-southeast-1"))
-    kwargs: dict = {"region_name": region}
+    kwargs: dict[str, Any] = {"region_name": region}
     if endpoint_url := os.environ.get("AWS_ENDPOINT_URL"):
         kwargs["endpoint_url"] = endpoint_url
     sqs = boto3.client("sqs", **kwargs)

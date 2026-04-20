@@ -7,4 +7,4 @@ class Settings(BaseSettings):
     queue_url: str
 
 
-settings: Settings = Settings()
+settings: Settings = Settings()  # type: ignore[call-arg]

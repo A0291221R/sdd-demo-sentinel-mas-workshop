@@ -1,4 +1,7 @@
+from __future__ import annotations
+
 import json
+from typing import Any
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -7,7 +10,7 @@ from services.central.consumer import consume_one
 from services.api.task_store import TASK_STORE, TaskResponse
 
 
-def _make_sqs_response(task_id: str, query: str) -> dict:
+def _make_sqs_response(task_id: str, query: str) -> dict[str, Any]:
     return {
         "Messages": [
             {
@@ -18,7 +21,7 @@ def _make_sqs_response(task_id: str, query: str) -> dict:
     }
 
 
-def _empty_sqs_response() -> dict:
+def _empty_sqs_response() -> dict[str, Any]:
     return {"Messages": []}
 
 

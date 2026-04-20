@@ -40,7 +40,7 @@ def build_graph() -> CompiledStateGraph[GraphState]:
     graph.add_edge("events", END)
     graph.add_edge("faq", END)
 
-    return graph.compile()
+    return graph.compile()  # type: ignore[return-value]
 
 
 SENTINEL_GRAPH: CompiledStateGraph[GraphState] = build_graph()

@@ -61,7 +61,6 @@ def test_unauthorised_tool_returns_rejection(executor: AgentExecutor) -> None:
 
 def test_tool_exception_logs_error_and_does_not_set_agent_result(executor: AgentExecutor) -> None:
     from services.central.agents.crew_agents import AgentRuntime
-    from types import MappingProxyType
 
     def _failing_tool(**kwargs: object) -> object:
         raise RuntimeError("upstream unavailable")
