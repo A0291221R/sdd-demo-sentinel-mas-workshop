@@ -4,7 +4,7 @@ import json
 import os
 from typing import Any
 
-import psycopg2  # type: ignore[import-untyped]
+import psycopg2
 
 from .models import TaskResponse
 
