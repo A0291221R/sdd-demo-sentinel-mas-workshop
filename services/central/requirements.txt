@@ -1,5 +1,7 @@
 boto3
 langgraph
 pydantic
+pydantic-settings
 psycopg2-binary
+types-psycopg2
 pytest
